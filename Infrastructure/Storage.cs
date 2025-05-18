@@ -9,11 +9,17 @@ public class Storage
 
     public HashSet<string> GetAllCodes() => _data.Keys.ToHashSet();
 
-    public Guid AddNewLobby(string code, string leaderNickname)
+    public void AddNewLobby(string code)
     {
-        if (!_data.TryAdd(code, new Lobby(leaderNickname)))
+        if (!_data.TryAdd(code, new Lobby()))
             throw new InvalidOperationException($"Lobby '{code}' already exists");
+    }
 
-        return _data[code].Leader.Id;
+    public Lobby GetLobby(string code)
+    {
+        if (!_data.TryGetValue(code, out var lobby))
+            throw new InvalidOperationException($"Lobby '{code}' does not exist");
+
+        return lobby;
     }
 }

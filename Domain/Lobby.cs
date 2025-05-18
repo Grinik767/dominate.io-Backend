@@ -5,17 +5,26 @@ namespace Domain;
 public class Lobby
 {
     public readonly State Situation = new();
-    public readonly Player Leader;
     public DateTime LastAccess = DateTime.Now;
+    private readonly ConcurrentDictionary<string, Player> _data = new();
 
-    private readonly ConcurrentDictionary<Guid, Player> _data = new();
+    public Player? Leader { get; private set; }
 
-    public Lobby(string leaderNickname)
+    public void AddPlayer(string nickname)
     {
-        Leader = new Player(leaderNickname, GetFreeColor(), Guid.NewGuid());
-        _data[Leader.Id] = Leader;
+        LastAccess = DateTime.Now;
+
+        if (_data.Count == 4)
+            throw new InvalidOperationException("Lobby is full");
+        if (_data.ContainsKey(nickname))
+            throw new InvalidOperationException("Nickname already taken");
+
+        _data[nickname] = new Player(nickname, GetFreeColor());
+
+        if (_data.Count == 1)
+            Leader = _data[nickname];
     }
-    
+
     private Color GetFreeColor()
     {
         var allColors = Enum.GetValues(typeof(Color)).Cast<Color>().ToHashSet();

@@ -8,13 +8,10 @@ namespace Api.Controllers;
 public class LobbyController(Storage storage, CodeGenerator codeGenerator) : ControllerBase
 {
     [HttpPost]
-    public IActionResult Create([FromBody] LobbyCreateRequest req)
+    public IActionResult Create()
     {
         var code = codeGenerator.GenerateCode(storage.GetAllCodes());
-        var lobbyId = storage.AddNewLobby(code, req.LeaderNickname);
-
-        return Ok(new { Code = code, SessionId = lobbyId });
+        storage.AddNewLobby(code);
+        return Ok(new { Code = code });
     }
 }
-
-public record LobbyCreateRequest(string LeaderNickname);
