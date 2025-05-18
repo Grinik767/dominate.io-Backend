@@ -5,9 +5,9 @@ namespace Domain;
 public class Lobby
 {
     public readonly State Situation = new();
-    public DateTime LastAccess = DateTime.Now;
     private readonly ConcurrentDictionary<string, Player> _data = new();
 
+    public DateTime LastAccess { get; private set; }
     public Player? Leader { get; private set; }
 
     public void AddPlayer(string nickname)
@@ -23,6 +23,12 @@ public class Lobby
 
         if (_data.Count == 1)
             Leader = _data[nickname];
+    }
+
+    public bool TryRemovePlayer(string nickname)
+    {
+        LastAccess = DateTime.Now;
+        return _data.TryRemove(nickname, out _);
     }
 
     private Color GetFreeColor()

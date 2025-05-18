@@ -43,8 +43,14 @@ public class GameController(Storage storage, ConnectionManager manager) : Contro
                         lobby.AddPlayer(nickname);
                         await manager.BroadcastAsync(code, new { Type = "PlayerJoined", Nickname = nickname });
                         break;
+                    case "Leave":
+                        if (lobby.TryRemovePlayer(nickname))
+                            await manager.BroadcastAsync(code, new { Type = "PlayerLeft", Nickname = nickname });
+                        goto Done;
                 }
             }
+
+            Done: ;
         }
         catch (Exception ex)
         {
