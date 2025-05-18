@@ -1,6 +1,18 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using Infrastructure;
 
-app.MapGet("/", () => "Hello World!");
+var builder = WebApplication.CreateBuilder(args);
+
+var services = builder.Services;
+services.AddSwaggerGen();
+services.AddSingleton<Storage>();
+services.AddSingleton<CodeGenerator>();
+services.AddControllers();
+
+var app = builder.Build();
+app.UseWebSockets();
+app.MapControllers();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
