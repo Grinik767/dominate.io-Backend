@@ -9,13 +9,14 @@ public class LeaveCommand : ICommand
     public string Type => "Leave";
 
     public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
-        WebSocket? socket)
+        WebSocket socket)
     {
         var nicknameLower = nickname.ToLower();
 
-        if (lobby.TryRemovePlayer(nicknameLower))
-            await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerLeft", Nickname = nickname });
+        if (!lobby.TryRemovePlayer(nicknameLower))
+            return;
         
-        
+        await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerLeft", Nickname = nickname });
+        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by server", CancellationToken.None);
     }
 }

@@ -8,6 +8,5 @@ public interface ICommand
 {
     string Type { get; }
 
-    Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
-        WebSocket? socket = null);
+    Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager, WebSocket socket);
 }

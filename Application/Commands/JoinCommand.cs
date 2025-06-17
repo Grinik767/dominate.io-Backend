@@ -9,7 +9,7 @@ public class JoinCommand : ICommand
     public string Type => "Leave";
 
     public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
-        WebSocket? socket)
+        WebSocket socket)
     {
         var nicknameLower = nickname.ToLower();
         if (string.IsNullOrEmpty(nicknameLower))

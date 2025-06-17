@@ -53,12 +53,10 @@ public class GameController(Storage storage, ConnectionManager manager) : Contro
         catch (Exception ex)
         {
             if (socket is { State: WebSocketState.Open })
+            {
                 await SendErrorAsync(socket, "ProcessingError", ex.Message);
-        }
-        finally
-        {
-            if (socket is { State: WebSocketState.Open })
                 await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by server", CancellationToken.None);
+            }
         }
     }
 
