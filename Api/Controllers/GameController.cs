@@ -15,7 +15,7 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
 {
     private readonly Dictionary<string, ICommand> _commands = new()
     {
-        ["Join"] = new JoinCommand(),
+        ["Join"] = new JoinCommand(manager),
         ["Leave"] = new LeaveCommand()
     };
 
@@ -30,13 +30,13 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
         }
 
         WebSocket? socket = null;
-
         try
         {
             socket = await context.WebSockets.AcceptWebSocketAsync();
+            var buffer = new byte[4096];
+
             var lobby = storage.GetLobby(r.Code);
 
-            var buffer = new byte[4096];
             while (socket.State == WebSocketState.Open)
             {
                 var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
@@ -45,19 +45,10 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
 
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var doc = JsonDocument.Parse(msg);
-                var type = doc.RootElement.GetProperty("type").GetString()!;
-                
-                if (type == "Auth")
-                {
-                    if (string.IsNullOrEmpty(r.Nickname))
-                        throw new InvalidOperationException("Никнейм обязателен");
-
-                    manager.AddSocket(r.Code, r.Nickname, socket);
-                    continue;
-                }
+                var type = doc.RootElement.GetProperty("Type").GetString()!;
                 
                 if (_commands.TryGetValue(type, out var command))
-                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, connectionService, CancellationToken.None);
+                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, connectionService, CancellationToken.None, socket);
             }
         }
         catch (Exception ex)
@@ -82,7 +73,7 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
 
 public class ConnectRequest
 {
-    [RegularExpression("^[A-Z0-9]+$")]
+    [RegularExpression("^[A-Z0-9]{6}$")] 
     public string Code { get; set; }
 
     [RegularExpression("^[a-zA-Z0-9_-]+$")]
