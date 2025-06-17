@@ -6,7 +6,7 @@ namespace Application.Commands;
 
 public class JoinCommand : ICommand
 {
-    public string Type => "Leave";
+    public string Type => "Join";
 
     public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
         WebSocket socket)

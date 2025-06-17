@@ -10,14 +10,8 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GameController(Storage storage, ConnectionManager manager) : ControllerBase
+public class GameController(Storage storage, ConnectionManager manager, CommandDispatcher dispatcher) : ControllerBase
 {
-    private readonly Dictionary<string, ICommand> _commands = new()
-    {
-        ["Join"] = new JoinCommand(),
-        ["Leave"] = new LeaveCommand()
-    };
-
     [HttpGet]
     public async Task Connect([FromQuery] ConnectRequest r)
     {
@@ -46,7 +40,8 @@ public class GameController(Storage storage, ConnectionManager manager) : Contro
                 var doc = JsonDocument.Parse(msg);
                 var type = doc.RootElement.GetProperty("Type").GetString()!;
 
-                if (_commands.TryGetValue(type, out var command))
+                var command = dispatcher.GetCommand(type);
+                if (command is not null)
                     await command.ExecuteAsync(lobby, r.Code, r.Nickname, manager, socket);
             }
         }

@@ -1,3 +1,4 @@
+using Application.Commands;
 using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,10 @@ services.AddSwaggerGen();
 services.AddSingleton<Storage>();
 services.AddSingleton<CodeGenerator>();
 services.AddSingleton<ConnectionManager>();
+
+builder.Services.AddSingleton<CommandDispatcher>();
+builder.Services.AddSingleton<ICommand, JoinCommand>();
+builder.Services.AddSingleton<ICommand, LeaveCommand>();
 
 services.AddControllers();
 
