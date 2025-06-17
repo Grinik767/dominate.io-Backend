@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Api.Contracts;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Application;
+using Application.Commands;
 using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +10,11 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GameController(Storage storage, ConnectionManager manager, IConnectionService connectionService)
-    : ControllerBase
+public class GameController(Storage storage, ConnectionManager manager) : ControllerBase
 {
     private readonly Dictionary<string, ICommand> _commands = new()
     {
-        ["Join"] = new JoinCommand(manager),
+        ["Join"] = new JoinCommand(),
         ["Leave"] = new LeaveCommand()
     };
 
@@ -46,9 +45,9 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var doc = JsonDocument.Parse(msg);
                 var type = doc.RootElement.GetProperty("Type").GetString()!;
-                
+
                 if (_commands.TryGetValue(type, out var command))
-                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, connectionService, CancellationToken.None, socket);
+                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, manager, socket);
             }
         }
         catch (Exception ex)
@@ -69,13 +68,4 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
         var bytes = Encoding.UTF8.GetBytes(errorPayload);
         return socket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
     }
-}
-
-public class ConnectRequest
-{
-    [RegularExpression("^[A-Z0-9]{6}$")] 
-    public string Code { get; set; }
-
-    [RegularExpression("^[a-zA-Z0-9_-]+$")]
-    public string Nickname { get; set; }
 }
