@@ -1,6 +1,7 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,10 +9,16 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GameController(Storage storage, ConnectionManager manager) : ControllerBase
+public class GameController(Storage storage, ConnectionManager manager, IConnectionService connectionService) : ControllerBase
 {
-    [HttpGet("connect/{code}/{nickname}")]
-    public async Task Connect(string code, string nickname)
+    private readonly Dictionary<string, ICommand> _commands = new()
+    {
+        ["Join"] = new JoinCommand(),
+        ["Leave"] = new LeaveCommand()
+    };
+
+    [HttpGet("connect/{code}")]
+    public async Task Connect(string code)
     {
         var context = HttpContext;
         if (!context.WebSockets.IsWebSocketRequest)
@@ -21,12 +28,12 @@ public class GameController(Storage storage, ConnectionManager manager) : Contro
         }
 
         WebSocket? socket = null;
+        string? nickname = null;
+
         try
         {
-            var lobby = storage.GetLobby(code);
-
             socket = await context.WebSockets.AcceptWebSocketAsync();
-            manager.AddSocket(code, nickname, socket);
+            var lobby = storage.GetLobby(code);
 
             var buffer = new byte[4096];
             while (socket.State == WebSocketState.Open)
@@ -36,21 +43,25 @@ public class GameController(Storage storage, ConnectionManager manager) : Contro
                     break;
 
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                var type = JsonDocument.Parse(msg).RootElement.GetProperty("type").GetString();
-                switch (type)
-                {
-                    case "Join":
-                        lobby.AddPlayer(nickname);
-                        await manager.BroadcastAsync(code, new { Type = "PlayerJoined", Nickname = nickname });
-                        break;
-                    case "Leave":
-                        if (lobby.TryRemovePlayer(nickname))
-                            await manager.BroadcastAsync(code, new { Type = "PlayerLeft", Nickname = nickname });
-                        goto Done;
-                }
-            }
+                var doc = JsonDocument.Parse(msg);
+                var type = doc.RootElement.GetProperty("type").GetString()!;
 
-            Done: ;
+                if (type == "Auth")
+                {
+                    nickname = doc.RootElement.GetProperty("nickname").GetString();
+                    if (string.IsNullOrEmpty(nickname))
+                        throw new InvalidOperationException("Никнейм обязателен");
+
+                    manager.AddSocket(code, nickname, socket);
+                    continue;
+                }
+
+                if (nickname == null)
+                    throw new InvalidOperationException("Никнейм не установлен");
+
+                if (_commands.TryGetValue(type, out var command)) 
+                    await command.ExecuteAsync(lobby, code, nickname, connectionService, CancellationToken.None);
+            }
         }
         catch (Exception ex)
         {
