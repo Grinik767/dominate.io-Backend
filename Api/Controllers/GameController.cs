@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Application;
@@ -9,7 +10,8 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GameController(Storage storage, ConnectionManager manager, IConnectionService connectionService) : ControllerBase
+public class GameController(Storage storage, ConnectionManager manager, IConnectionService connectionService)
+    : ControllerBase
 {
     private readonly Dictionary<string, ICommand> _commands = new()
     {
@@ -17,8 +19,8 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
         ["Leave"] = new LeaveCommand()
     };
 
-    [HttpGet("connect/{code}")]
-    public async Task Connect(string code)
+    [HttpGet]
+    public async Task Connect([FromQuery] ConnectRequest r)
     {
         var context = HttpContext;
         if (!context.WebSockets.IsWebSocketRequest)
@@ -28,12 +30,11 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
         }
 
         WebSocket? socket = null;
-        string? nickname = null;
 
         try
         {
             socket = await context.WebSockets.AcceptWebSocketAsync();
-            var lobby = storage.GetLobby(code);
+            var lobby = storage.GetLobby(r.Code);
 
             var buffer = new byte[4096];
             while (socket.State == WebSocketState.Open)
@@ -45,22 +46,18 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var doc = JsonDocument.Parse(msg);
                 var type = doc.RootElement.GetProperty("type").GetString()!;
-
+                
                 if (type == "Auth")
                 {
-                    nickname = doc.RootElement.GetProperty("nickname").GetString();
-                    if (string.IsNullOrEmpty(nickname))
+                    if (string.IsNullOrEmpty(r.Nickname))
                         throw new InvalidOperationException("Никнейм обязателен");
 
-                    manager.AddSocket(code, nickname, socket);
+                    manager.AddSocket(r.Code, r.Nickname, socket);
                     continue;
                 }
-
-                if (nickname == null)
-                    throw new InvalidOperationException("Никнейм не установлен");
-
-                if (_commands.TryGetValue(type, out var command)) 
-                    await command.ExecuteAsync(lobby, code, nickname, connectionService, CancellationToken.None);
+                
+                if (_commands.TryGetValue(type, out var command))
+                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, connectionService, CancellationToken.None);
             }
         }
         catch (Exception ex)
@@ -81,4 +78,13 @@ public class GameController(Storage storage, ConnectionManager manager, IConnect
         var bytes = Encoding.UTF8.GetBytes(errorPayload);
         return socket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
     }
+}
+
+public class ConnectRequest
+{
+    [RegularExpression("^[A-Z0-9]+$")]
+    public string Code { get; set; }
+
+    [RegularExpression("^[a-zA-Z0-9_-]+$")]
+    public string Nickname { get; set; }
 }
