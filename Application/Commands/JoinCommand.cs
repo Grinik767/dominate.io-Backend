@@ -11,16 +11,15 @@ public class JoinCommand : ICommand
     public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
         WebSocket socket)
     {
-        var nicknameLower = nickname.ToLower();
-        if (string.IsNullOrEmpty(nicknameLower))
+        if (string.IsNullOrEmpty(nickname))
             throw new InvalidOperationException("Nickname is empty");
 
         if (socket is null)
             throw new InvalidOperationException("Socket is null");
 
-        lobby.AddPlayer(nicknameLower);
+        lobby.AddPlayer(nickname);
 
-        manager.AddSocket(lobbyCode, nicknameLower, socket);
+        manager.AddSocket(lobbyCode, nickname, socket);
         await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerJoined", Nickname = nickname });
     }
 }
