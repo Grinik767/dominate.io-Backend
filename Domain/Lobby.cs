@@ -2,7 +2,7 @@
 
 namespace Domain;
 
-public class Lobby
+public class Lobby(int playersCount)
 {
     public readonly State Situation = new();
     private readonly ConcurrentDictionary<string, Player> _data = new();
@@ -14,7 +14,7 @@ public class Lobby
     {
         LastAccess = DateTime.Now;
 
-        if (_data.Count == 4)
+        if (_data.Count == playersCount)
             throw new InvalidOperationException("Lobby is full");
         if (IsContainsPlayer(nickname))
             throw new InvalidOperationException("Nickname already taken");
@@ -28,7 +28,7 @@ public class Lobby
         return _data.TryRemove(nickname, out _);
     }
 
-    public void CheckGameStart() => IsGameStarted = _data.Values.All(player => player.IsReady);
+    public void CheckGameStart() => IsGameStarted = _data.Values.Count(player => player.IsReady) == playersCount;
 
     public bool IsContainsPlayer(string nickname) => _data.ContainsKey(nickname);
 

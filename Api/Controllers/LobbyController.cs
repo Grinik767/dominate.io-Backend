@@ -1,4 +1,5 @@
-﻿using Infrastructure;
+﻿using Api.Contracts;
+using Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -8,10 +9,10 @@ namespace Api.Controllers;
 public class LobbyController(Storage storage, CodeGenerator codeGenerator) : ControllerBase
 {
     [HttpPost]
-    public IActionResult Create()
+    public IActionResult Create([FromBody] CreateLobbyRequest r)
     {
         var code = codeGenerator.GenerateCode(storage.GetAllCodes());
-        storage.AddNewLobby(code);
+        storage.AddNewLobby(code, r.PlayersCount);
         return Ok(new { Code = code });
     }
 }

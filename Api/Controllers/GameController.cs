@@ -50,7 +50,8 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
             if (socket is { State: WebSocketState.Open })
             {
                 await SendErrorAsync(socket, "ProcessingError", ex.Message);
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by server", CancellationToken.None);
+                await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Closed by server",
+                    CancellationToken.None);
             }
         }
     }

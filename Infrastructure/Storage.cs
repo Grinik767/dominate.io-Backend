@@ -9,9 +9,9 @@ public class Storage
 
     public HashSet<string> GetAllCodes() => _data.Keys.ToHashSet();
 
-    public void AddNewLobby(string code)
+    public void AddNewLobby(string code, int playersCount)
     {
-        if (!_data.TryAdd(code, new Lobby()))
+        if (!_data.TryAdd(code, new Lobby(playersCount)))
             throw new InvalidOperationException($"Lobby '{code}' already exists");
     }
 
