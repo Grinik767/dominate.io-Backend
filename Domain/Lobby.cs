@@ -8,7 +8,7 @@ public class Lobby
     private readonly ConcurrentDictionary<string, Player> _data = new();
 
     public DateTime LastAccess { get; private set; }
-    public Player? Leader { get; private set; }
+    public bool IsGameStarted { get; private set; }
 
     public void AddPlayer(string nickname)
     {
@@ -20,9 +20,6 @@ public class Lobby
             throw new InvalidOperationException("Nickname already taken");
 
         _data[nickname] = new Player(nickname, GetFreeColor());
-
-        if (_data.Count == 1)
-            Leader = _data[nickname];
     }
 
     public bool TryRemovePlayer(string nickname)
@@ -30,6 +27,8 @@ public class Lobby
         LastAccess = DateTime.Now;
         return _data.TryRemove(nickname, out _);
     }
+
+    public void CheckGameStart() => IsGameStarted = _data.Values.All(player => player.IsReady);
 
     public bool IsContainsPlayer(string nickname) => _data.ContainsKey(nickname);
 
@@ -39,7 +38,7 @@ public class Lobby
             .ToDictionary(x => x.Nickname, x => x.Color.ToString());
     }
 
-    public Player? GetPlayer(string nickname) =>_data.GetValueOrDefault(nickname);
+    public Player? GetPlayer(string nickname) => _data.GetValueOrDefault(nickname);
 
     private Color GetFreeColor()
     {
