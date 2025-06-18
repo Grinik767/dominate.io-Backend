@@ -20,6 +20,10 @@ public class JoinCommand : ICommand
         lobby.AddPlayer(nickname);
 
         manager.AddSocket(lobbyCode, nickname, socket);
-        await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerJoined", Nickname = nickname });
+        await manager.BroadcastAsync(lobbyCode, new
+        {
+            Type = "PlayerJoined", Nickname = nickname,
+            Color = lobby.GetPlayer(nickname)!.Color.ToString()
+        });
     }
 }

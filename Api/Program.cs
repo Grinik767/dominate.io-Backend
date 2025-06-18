@@ -13,6 +13,7 @@ services.AddSingleton<ConnectionManager>();
 builder.Services.AddSingleton<CommandDispatcher>();
 builder.Services.AddSingleton<ICommand, JoinCommand>();
 builder.Services.AddSingleton<ICommand, LeaveCommand>();
+builder.Services.AddSingleton<ICommand, GetPlayersCommand>();
 
 services.AddControllers();
 

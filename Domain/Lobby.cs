@@ -16,7 +16,7 @@ public class Lobby
 
         if (_data.Count == 4)
             throw new InvalidOperationException("Lobby is full");
-        if (_data.ContainsKey(nickname))
+        if (IsContainsPlayer(nickname))
             throw new InvalidOperationException("Nickname already taken");
 
         _data[nickname] = new Player(nickname, GetFreeColor());
@@ -30,6 +30,16 @@ public class Lobby
         LastAccess = DateTime.Now;
         return _data.TryRemove(nickname, out _);
     }
+
+    public bool IsContainsPlayer(string nickname) => _data.ContainsKey(nickname);
+
+    public Dictionary<string, string> GetPlayersColor()
+    {
+        return _data.Keys.Select(x => (Nickname: x, _data[x].Color))
+            .ToDictionary(x => x.Nickname, x => x.Color.ToString());
+    }
+
+    public Player? GetPlayer(string nickname) =>_data.GetValueOrDefault(nickname);
 
     private Color GetFreeColor()
     {
