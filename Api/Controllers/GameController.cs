@@ -35,7 +35,7 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
                 var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Close)
                     break;
-
+                
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var doc = JsonDocument.Parse(msg);
                 var type = doc.RootElement.GetProperty("Type").GetString()!;
@@ -54,6 +54,8 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
                     CancellationToken.None);
             }
         }
+        
+        manager.RemoveSocket(r.Code, r.Nickname);
     }
 
     private static Task SendErrorAsync(WebSocket socket, string errorType, string message)

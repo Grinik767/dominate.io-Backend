@@ -12,6 +12,10 @@ public class ConnectionManager
     public void AddSocket(string lobbyCode, string player, WebSocket socket)
     {
         var dict = _sockets.GetOrAdd(lobbyCode, _ => new ConcurrentDictionary<string, WebSocket>());
+        
+        if (dict.TryGetValue(player, out var value) && value != socket)
+            throw new InvalidOperationException($"Player {player} is already connected");
+        
         dict[player] = socket;
     }
 

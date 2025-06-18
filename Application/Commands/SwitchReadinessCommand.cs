@@ -15,7 +15,9 @@ public class SwitchReadinessCommand : ICommand
             throw new InvalidOperationException("Player is not in lobby");
         if (lobby.IsGameStarted)
             throw new InvalidOperationException("Game is started");
-
+        
+        manager.AddSocket(lobbyCode, nickname, socket);
+        
         var player = lobby.GetPlayer(nickname)!;
         player.SwitchReadiness();
         await manager.BroadcastAsync(lobbyCode, new { Type = "Readiness", player.Nickname, player.IsReady });
