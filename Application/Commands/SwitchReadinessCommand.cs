@@ -13,6 +13,8 @@ public class SwitchReadinessCommand : ICommand
     {
         if (!lobby.IsContainsPlayer(nickname))
             throw new InvalidOperationException("Player is not in lobby");
+        if (lobby.IsGameStarted)
+            throw new InvalidOperationException("Game is started");
 
         var player = lobby.GetPlayer(nickname)!;
         player.SwitchReadiness();

@@ -32,10 +32,11 @@ public class Lobby
 
     public bool IsContainsPlayer(string nickname) => _data.ContainsKey(nickname);
 
-    public Dictionary<string, string> GetPlayersColor()
+    public Dictionary<string, object> GetPlayers()
     {
-        return _data.Keys.Select(x => (Nickname: x, _data[x].Color))
-            .ToDictionary(x => x.Nickname, x => x.Color.ToString());
+        return _data.Keys.Select(x => (Nickname: x, Info: _data[x]))
+            .ToDictionary<(string Nickname, Player Info), string, object>(x => x.Nickname,
+                x => new { Color = x.Info.Color.ToString(), x.Info.IsReady });
     }
 
     public Player? GetPlayer(string nickname) => _data.GetValueOrDefault(nickname);

@@ -14,7 +14,7 @@ public class GetPlayersCommand : ICommand
         if (!lobby.IsContainsPlayer(nickname))
             throw new InvalidOperationException("Player is not in lobby");
         
-        var players = lobby.GetPlayersColor();
+        var players = lobby.GetPlayers();
         await manager.SendToPlayerAsync(lobbyCode, nickname, new { Type = "SendPlayers", Players = players });
     }
 }

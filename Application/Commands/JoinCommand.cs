@@ -13,9 +13,10 @@ public class JoinCommand : ICommand
     {
         if (string.IsNullOrEmpty(nickname))
             throw new InvalidOperationException("Nickname is empty");
-
         if (socket is null)
             throw new InvalidOperationException("Socket is null");
+        if (lobby.IsGameStarted)
+            throw new InvalidOperationException("Game is started");
 
         lobby.AddPlayer(nickname);
 
