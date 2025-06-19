@@ -79,6 +79,15 @@ public class State
 
         return losePlayers;
     }
+    
+    public string? CheckForWinner()
+    {
+        var activePlayers = PlayerQueue
+            .Where(p => _playersHexCount[p] > 0)
+            .ToList();
+
+        return activePlayers.Count == 1 ? activePlayers[0] : null;
+    }
 
     public (int q, int r, int s, int power, string owner, bool size)[] GetField() =>
         _field.Values

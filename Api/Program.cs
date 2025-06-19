@@ -16,6 +16,7 @@ builder.Services.AddSingleton<ICommand, LeaveCommand>();
 builder.Services.AddSingleton<ICommand, GetPlayersCommand>();
 builder.Services.AddSingleton<ICommand, ChangePhaseCommand>();
 builder.Services.AddSingleton<ICommand, TurnEndCommand>();
+builder.Services.AddSingleton<ICommand, MakeMoveCommand>();
 builder.Services.AddSingleton<ICommand, SwitchReadinessCommand>();
 
 services.AddControllers();
