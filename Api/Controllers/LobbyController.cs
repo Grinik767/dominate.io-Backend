@@ -12,7 +12,7 @@ public class LobbyController(Storage storage, CodeGenerator codeGenerator) : Con
     public IActionResult Create([FromBody] CreateLobbyRequest r)
     {
         var code = codeGenerator.GenerateCode(storage.GetAllCodes());
-        storage.AddNewLobby(code, r.PlayersCount);
+        storage.AddNewLobby(code, r.PlayersCount, r.Field);
         return Ok(new { Code = code });
     }
 }
