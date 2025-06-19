@@ -55,12 +55,12 @@ public class State
         foreach (var move in moves)
         {
             var prevHexValues = _field[(move.q, move.r, move.s)];
-            if (prevHexValues.Owner != move.owner && prevHexValues.Owner != null)
+            if (prevHexValues.Owner != move.owner && !string.IsNullOrEmpty(prevHexValues.Owner))
             {
-                _playersHexCount[prevHexValues.Owner] -= 1;
+                _playersHexCount[prevHexValues.Owner!] -= 1;
                 _playersHexCount[move.owner] += 1;
             }
-            else if (prevHexValues.Owner == null) 
+            else if (string.IsNullOrEmpty(prevHexValues.Owner)) 
                 _playersHexCount[move.owner] += 1;
             
             _field[(move.q, move.r, move.s)].UpdateHex(move.power, move.owner);
