@@ -37,7 +37,8 @@ public class SwitchReadinessCommand : ICommand
                     cell.size
                 })
                 .ToArray();
-            await manager.BroadcastAsync(lobbyCode, new { Type = "GameStarted", field });
+            var playersQueue = lobby.Situation.PlayerQueue.ToArray();
+            await manager.BroadcastAsync(lobbyCode, new { Type = "GameStarted", playersQueue, field });
         }
             
     }

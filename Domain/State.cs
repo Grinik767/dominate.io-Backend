@@ -7,7 +7,7 @@ public class State
 {
     public string CurrentPlayer { get; private set; }
     public Phase CurrentPhase { get; private set; }
-    private List<string> _playerQueue;
+    public List<string> PlayerQueue { get; private set; }
     private readonly ConcurrentDictionary<(int q, int r, int s), HexCell> _field = new();
     private readonly ConcurrentDictionary<string, int> _playersHexCount = new();
 
@@ -23,8 +23,8 @@ public class State
             throw new ArgumentException("Lobby is empty");
         
         var rnd = new Random();
-        _playerQueue = players.OrderBy(_ => rnd.Next()).ToList();
-        CurrentPlayer = _playerQueue[0];
+        PlayerQueue = players.OrderBy(_ => rnd.Next()).ToList();
+        CurrentPlayer = PlayerQueue[0];
         CurrentPhase = Phase.Attack;
 
         foreach (var player in players)
@@ -35,15 +35,15 @@ public class State
 
     public void PassTheMove()
     {
-        if (_playerQueue.Count == 0)
+        if (PlayerQueue.Count == 0)
             throw new InvalidOperationException("No players in queue");
 
-        var currentIndex = _playerQueue.IndexOf(CurrentPlayer);
+        var currentIndex = PlayerQueue.IndexOf(CurrentPlayer);
         if (currentIndex == -1)
             throw new InvalidOperationException("Current player not found in queue");
 
-        var nextIndex = (currentIndex + 1) % _playerQueue.Count;
-        CurrentPlayer = _playerQueue[nextIndex];
+        var nextIndex = (currentIndex + 1) % PlayerQueue.Count;
+        CurrentPlayer = PlayerQueue[nextIndex];
         CurrentPhase = Phase.Attack;
     }
 
@@ -73,7 +73,7 @@ public class State
         foreach (var player in _playersHexCount.Keys)
             if (_playersHexCount[player] < 1)
             {
-                _playerQueue.Remove(player);
+                PlayerQueue.Remove(player);
                 losePlayers.Add(player); 
             }
 
