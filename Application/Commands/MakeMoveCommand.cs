@@ -9,8 +9,7 @@ namespace Application.Commands;
 public class MakeMoveCommand : ICommand
 {
     public string Type => "MakeMove";
-    public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
-        WebSocket socket)
+    public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager, WebSocket socket, JsonElement data)
     {
         if (!lobby.IsContainsPlayer(nickname))
             throw new InvalidOperationException("Player is not in lobby");
@@ -23,52 +22,32 @@ public class MakeMoveCommand : ICommand
         
         try
         {
-            while (socket.State == WebSocketState.Open)
-            {
-                var buffer = new byte[4096];
-                var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+            if (!data.TryGetProperty("Moves", out var movesElement) || !movesElement.EnumerateArray().Any())
+                throw new ArgumentException("Moves array is missing or empty");
 
-                if (result.MessageType == WebSocketMessageType.Close)
-                    break;
+            var moveDtos = movesElement.Deserialize<MoveDto[]>() 
+                           ?? throw new ArgumentException("Invalid moves format");
 
-                if (result.MessageType != WebSocketMessageType.Text)
-                    continue; 
+            var moves = moveDtos
+                .Select(m => (Q: m.q, R: m.r, S: m.s, Power: m.power, Owner: m.owner, Size: m.size))
+                .ToArray();
 
-                var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                var doc = JsonDocument.Parse(msg);
-                var root = doc.RootElement;
+            lobby.Situation.ValidateMove(nickname, moves);
 
-                if (!root.TryGetProperty("Moves", out var movesElement) || !movesElement.EnumerateArray().Any())
-                    throw new ArgumentException("Moves array is missing or empty");
+            var losers = lobby.Situation.CheckForLose();
+            if (losers.Count > 0) 
+                await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerLost", Loser = losers.First() });
+        
+            var winner = lobby.Situation.CheckForWinner();
+            if (winner != null)
+                await manager.BroadcastAsync(lobbyCode, new { Type = "GameEnd", Winner = winner });
 
-                var moveDtos = movesElement.Deserialize<MoveDto[]>() 
-                               ?? throw new ArgumentException("Invalid moves format");
-
-                var moves = moveDtos
-                    .Select(m => (Q: m.q, R: m.r, S: m.s, Power: m.power, Owner: m.owner, Size: m.size))
-                    .ToArray();
-
-                lobby.Situation.ValidateMove(nickname, moves);
-
-                var losers = lobby.Situation.CheckForLose();
-                if (losers.Count > 0) 
-                    await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerLost", Loser = losers.First() });
-    
-                var winner = lobby.Situation.CheckForWinner();
-                if (winner != null)
-                    await manager.BroadcastAsync(lobbyCode, new { Type = "GameEnd", Winner = winner });
-
-                await manager.SendToPlayerAsync(lobbyCode, nickname, new { Type = "MakeMove", Message = "Correct move" });
-            }
+            await manager.SendToPlayerAsync(lobbyCode, nickname, new { Type = "MakeMove", Message = "Correct move" });
         }
         catch (Exception ex)
         {
-            if (socket is { State: WebSocketState.Open })
-            {
+            if (socket.State == WebSocketState.Open) 
                 await SendErrorAsync(socket, "ProcessingError", ex.Message);
-                await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Closed by server",
-                    CancellationToken.None);
-            }
         }
     }
     

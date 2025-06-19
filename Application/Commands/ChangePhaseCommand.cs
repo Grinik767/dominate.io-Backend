@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Text.Json;
 using Domain;
 using Infrastructure;
 
@@ -7,7 +8,7 @@ namespace Application.Commands;
 public class ChangePhaseCommand : ICommand
 {
     public string Type => "PhaseEnd"; 
-    public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager, WebSocket socket)
+    public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager, WebSocket socket, JsonElement data)
     {
         if (!lobby.IsContainsPlayer(nickname))
             throw new InvalidOperationException("Player is not in lobby");

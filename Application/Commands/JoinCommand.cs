@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Text.Json;
 using Domain;
 using Infrastructure;
 
@@ -9,7 +10,7 @@ public class JoinCommand : ICommand
     public string Type => "Join";
 
     public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
-        WebSocket socket)
+        WebSocket socket, JsonElement data)
     {
         if (string.IsNullOrEmpty(nickname))
             throw new InvalidOperationException("Nickname is empty");

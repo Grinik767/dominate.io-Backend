@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using System.Text.Json;
 using Domain;
 using Infrastructure;
 
@@ -9,7 +10,7 @@ public class LeaveCommand : ICommand
     public string Type => "Leave";
 
     public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
-        WebSocket socket)
+        WebSocket socket, JsonElement data)
     {
         if (!lobby.TryRemovePlayer(nickname))
             return;

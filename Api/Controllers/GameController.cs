@@ -38,11 +38,13 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
                 
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var doc = JsonDocument.Parse(msg);
-                var type = doc.RootElement.GetProperty("Type").GetString()!;
+                var root = doc.RootElement;
 
+                var type = root.GetProperty("Type").GetString()!;
                 var command = dispatcher.GetCommand(type);
+
                 if (command is not null)
-                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, manager, socket);
+                    await command.ExecuteAsync(lobby, r.Code, r.Nickname, manager, socket, root);
             }
         }
         catch (Exception ex)
