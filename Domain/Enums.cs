@@ -7,3 +7,9 @@ public enum Color
     Green,
     Purple
 }
+
+public enum Phase
+{
+    Attack,
+    Upgrade
+}
