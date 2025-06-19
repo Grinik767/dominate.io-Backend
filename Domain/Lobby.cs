@@ -30,6 +30,13 @@ public class Lobby(int playersCount, (int q, int r, int s, int power, string own
 
     public void CheckGameStart() => IsGameStarted = _data.Values.Count(player => player.IsReady) == playersCount;
 
+    public void StartGame()
+    {
+        var players = _data.Keys.ToList();
+        Situation.StartGame(players);
+        LastAccess = DateTime.Now;
+    }
+
     public bool IsContainsPlayer(string nickname) => _data.ContainsKey(nickname);
 
     public Dictionary<string, object> GetPlayers()

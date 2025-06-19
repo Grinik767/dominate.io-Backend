@@ -28,4 +28,7 @@ public class HexCell
         if (Owner != nickname)
             Owner = nickname;
     }
+    
+    public (int q, int r, int s, int power, string owner, bool size) ToTuple() 
+        => (Q, R, S, Power, Owner ?? string.Empty, Size);
 }

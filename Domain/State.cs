@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Net.Http.Headers;
 
 namespace Domain;
 
@@ -78,4 +79,9 @@ public class State
 
         return losePlayers;
     }
+
+    public (int q, int r, int s, int power, string owner, bool size)[] GetField() =>
+        _field.Values
+            .Select(cell => cell.ToTuple())
+            .ToArray();
 }

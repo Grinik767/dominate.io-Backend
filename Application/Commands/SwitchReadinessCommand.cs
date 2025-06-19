@@ -24,6 +24,21 @@ public class SwitchReadinessCommand : ICommand
 
         lobby.CheckGameStart();
         if (lobby.IsGameStarted)
-            await manager.BroadcastAsync(lobbyCode, new { Type = "GameStarted" });
+        {
+            lobby.StartGame();
+            var field = lobby.Situation.GetField()
+                .Select(cell => new 
+                {
+                    cell.q,
+                    cell.r,
+                    cell.s,
+                    cell.power,
+                    cell.owner,
+                    cell.size
+                })
+                .ToArray();
+            await manager.BroadcastAsync(lobbyCode, new { Type = "GameStarted", field });
+        }
+            
     }
 }
