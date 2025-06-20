@@ -22,4 +22,6 @@ public class Storage
 
         return lobby;
     }
+    
+    public bool IsLobbyExist(string code) => _data.ContainsKey(code);
 }

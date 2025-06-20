@@ -4,20 +4,34 @@ using Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 var services = builder.Services;
+var configuration = builder.Configuration;
+
 services.AddSwaggerGen();
 
 services.AddSingleton<Storage>();
 services.AddSingleton<CodeGenerator>();
 services.AddSingleton<ConnectionManager>();
 
-builder.Services.AddSingleton<CommandDispatcher>();
-builder.Services.AddSingleton<ICommand, JoinCommand>();
-builder.Services.AddSingleton<ICommand, LeaveCommand>();
-builder.Services.AddSingleton<ICommand, GetPlayersCommand>();
-builder.Services.AddSingleton<ICommand, ChangePhaseCommand>();
-builder.Services.AddSingleton<ICommand, TurnEndCommand>();
-builder.Services.AddSingleton<ICommand, MakeMoveCommand>();
-builder.Services.AddSingleton<ICommand, SwitchReadinessCommand>();
+services.AddSingleton<CommandDispatcher>();
+services.AddSingleton<ICommand, JoinCommand>();
+services.AddSingleton<ICommand, LeaveCommand>();
+services.AddSingleton<ICommand, GetPlayersCommand>();
+services.AddSingleton<ICommand, ChangePhaseCommand>();
+services.AddSingleton<ICommand, TurnEndCommand>();
+services.AddSingleton<ICommand, MakeMoveCommand>();
+services.AddSingleton<ICommand, SwitchReadinessCommand>();
+
+services.AddCors(options =>
+{
+    var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+    options.AddPolicy("AllowFrontend",
+        corsPolicyBuilder => corsPolicyBuilder
+            .WithOrigins(allowedOrigins!)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials());
+});
 
 services.AddControllers();
 
@@ -27,5 +41,7 @@ app.MapControllers();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors("AllowFrontend");
 
 app.Run();

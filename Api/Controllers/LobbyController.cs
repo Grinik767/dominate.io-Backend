@@ -18,4 +18,7 @@ public class LobbyController(Storage storage, CodeGenerator codeGenerator) : Con
         storage.AddNewLobby(code, r.PlayersCount, field);
         return Ok(new { Code = code });
     }
+
+    [HttpGet("{code}")]
+    public IActionResult IsLobbyExist(string code) => Ok(new { IsExist = storage.IsLobbyExist(code) });
 }
