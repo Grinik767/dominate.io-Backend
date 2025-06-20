@@ -14,10 +14,10 @@ public class GetPlayersCommand : ICommand
     {
         if (!lobby.IsContainsPlayer(nickname))
             throw new InvalidOperationException("Player is not in lobby");
-        
+
         manager.AddSocket(lobbyCode, nickname, socket);
-        
+
         var players = lobby.GetPlayers();
-        await manager.SendToPlayerAsync(lobbyCode, nickname, new { Type = "SendPlayers", Players = players });
+        await manager.SendToPlayerAsync(lobbyCode, nickname, new { type = "SendPlayers", players });
     }
 }

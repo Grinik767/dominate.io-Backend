@@ -40,7 +40,7 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
                 var doc = JsonDocument.Parse(msg);
                 var root = doc.RootElement;
 
-                var type = root.GetProperty("Type").GetString()!;
+                var type = root.GetProperty("type").GetString()!;
                 var command = dispatcher.GetCommand(type);
 
                 if (command is not null)

@@ -21,7 +21,7 @@ public class MakeMoveCommand : ICommand
 
         manager.AddSocket(lobbyCode, nickname, socket);
 
-        if (!data.TryGetProperty("Moves", out var movesElement) || !movesElement.EnumerateArray().Any())
+        if (!data.TryGetProperty("moves", out var movesElement) || !movesElement.EnumerateArray().Any())
             throw new ArgumentException("Moves array is missing or empty");
 
         var moveDtos = movesElement.Deserialize<MoveDto[]>()
@@ -35,19 +35,19 @@ public class MakeMoveCommand : ICommand
 
         var losers = lobby.Situation.CheckForLose();
         if (losers.Count > 0)
-            await manager.BroadcastAsync(lobbyCode, new { Type = "PlayerLost", Loser = losers.First() });
+            await manager.BroadcastAsync(lobbyCode, new { type = "PlayerLost", loser = losers.First() });
 
         var winner = lobby.Situation.CheckForWinner();
         if (winner != null)
-            await manager.BroadcastAsync(lobbyCode, new { Type = "GameEnd", Winner = winner });
+            await manager.BroadcastAsync(lobbyCode, new { type = "GameEnd", winner });
 
-        await manager.BroadcastAsync(nickname,
+        await manager.BroadcastAsync(lobbyCode,
             new
             {
-                Type = "MoveMade",
-                Nickname = nickname,
-                Moves = moveDtos,
-                Message = "Correct move"
+                type = "MoveMade",
+                nickname,
+                moves = moveDtos,
+                message = "Correct move"
             });
     }
 }

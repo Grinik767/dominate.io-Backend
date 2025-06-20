@@ -16,19 +16,20 @@ public class SwitchReadinessCommand : ICommand
             throw new InvalidOperationException("Player is not in lobby");
         if (lobby.IsGameStarted)
             throw new InvalidOperationException("Game is started");
-        
+
         manager.AddSocket(lobbyCode, nickname, socket);
-        
+
         var player = lobby.GetPlayer(nickname)!;
         player.SwitchReadiness();
-        await manager.BroadcastAsync(lobbyCode, new { Type = "Readiness", player.Nickname, player.IsReady });
+        await manager.BroadcastAsync(lobbyCode,
+            new { type = "Readiness", nickname = player.Nickname, isReady = player.IsReady });
 
         lobby.CheckGameStart();
         if (lobby.IsGameStarted)
         {
             lobby.StartGame();
             var field = lobby.Situation.GetField()
-                .Select(cell => new 
+                .Select(cell => new
                 {
                     cell.q,
                     cell.r,
@@ -39,8 +40,7 @@ public class SwitchReadinessCommand : ICommand
                 })
                 .ToArray();
             var playersQueue = lobby.Situation.PlayerQueue.ToArray();
-            await manager.BroadcastAsync(lobbyCode, new { Type = "GameStarted", playersQueue, field });
+            await manager.BroadcastAsync(lobbyCode, new { type = "GameStarted", playersQueue, field });
         }
-            
     }
 }

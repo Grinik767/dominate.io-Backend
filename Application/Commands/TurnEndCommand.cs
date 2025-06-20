@@ -27,10 +27,10 @@ public class TurnEndCommand : ICommand
         await manager.BroadcastAsync(lobbyCode,
             new
             {
-                Type = "TurnEnd",
-                Nickname = nickname,
-                NextPlayer = lobby.Situation.CurrentPlayer,
-                Message = $"Player {nickname} end his(her) turn, next is {lobby.Situation.CurrentPlayer}"
+                type = "TurnEnd",
+                nickname,
+                nextPlayer = lobby.Situation.CurrentPlayer,
+                message = $"Player {nickname} end his(her) turn, next is {lobby.Situation.CurrentPlayer}"
             });
     }
 }

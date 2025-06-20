@@ -27,9 +27,9 @@ public class ChangePhaseCommand : ICommand
         await manager.BroadcastAsync(lobbyCode,
             new
             {
-                Type = "PhaseEnd",
-                Nickname = nickname,
-                Message = $"Player {nickname} end attack phase, upgrade now"
+                type = "PhaseEnd",
+                nickname,
+                message = $"Player {nickname} end attack phase, upgrade now"
             });
     }
 }
