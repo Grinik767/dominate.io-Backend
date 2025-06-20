@@ -7,8 +7,10 @@ namespace Application.Commands;
 
 public class ChangePhaseCommand : ICommand
 {
-    public string Type => "PhaseEnd"; 
-    public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager, WebSocket socket, JsonElement data)
+    public string Type => "PhaseEnd";
+
+    public async Task ExecuteAsync(Lobby lobby, string lobbyCode, string nickname, ConnectionManager manager,
+        WebSocket socket, JsonElement data)
     {
         if (!lobby.IsContainsPlayer(nickname))
             throw new InvalidOperationException("Player is not in lobby");
@@ -18,11 +20,16 @@ public class ChangePhaseCommand : ICommand
             throw new ArgumentException("This is not Attack phase now");
         if (lobby.Situation.CurrentPlayer != nickname)
             throw new ArgumentException("This is not your move now!");
-        
+
         manager.AddSocket(lobbyCode, nickname, socket);
-        
+
         lobby.Situation.ChangePhase();
         await manager.BroadcastAsync(lobbyCode,
-            new { Type = "PhaseEnd", Message = $"Player {nickname} end attack phase, upgrade now" });
+            new
+            {
+                Type = "PhaseEnd",
+                Nickname = nickname,
+                Message = $"Player {nickname} end attack phase, upgrade now"
+            });
     }
 }
