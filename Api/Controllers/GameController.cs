@@ -35,7 +35,7 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
                 var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Close)
                     break;
-                
+
                 var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
                 var doc = JsonDocument.Parse(msg);
                 var root = doc.RootElement;
@@ -50,20 +50,9 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
         catch (Exception ex)
         {
             if (socket is { State: WebSocketState.Open })
-            {
-                await SendErrorAsync(socket, "ProcessingError", ex.Message);
-                await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, "Closed by server",
-                    CancellationToken.None);
-            }
+                await socket.CloseAsync(WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None);
         }
-        
-        manager.RemoveSocket(r.Code, r.Nickname);
-    }
 
-    private static Task SendErrorAsync(WebSocket socket, string errorType, string message)
-    {
-        var errorPayload = JsonSerializer.Serialize(new { type = "Error", error = errorType, message });
-        var bytes = Encoding.UTF8.GetBytes(errorPayload);
-        return socket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
+        manager.RemoveSocket(r.Code, r.Nickname);
     }
 }
