@@ -14,10 +14,11 @@ public class LeaveCommand : ICommand
     {
         if (!lobby.TryRemovePlayer(nickname))
             return;
+        
+        if (lobby.IsGameStarted)
+            lobby.Situation.RemovePlayer(nickname);
 
-        lobby.Situation.RemovePlayer(nickname);
-
-        dynamic message;
+        object message;
         if (lobby.IsGameStarted)
             message = new { type = "PlayerLeft", nickname, nextPlayer = lobby.Situation.CurrentPlayer };
         else
