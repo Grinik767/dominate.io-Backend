@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Net.Http.Headers;
 
 namespace Domain;
 
@@ -21,7 +20,7 @@ public class State
     {
         if (players.Count < 1)
             throw new ArgumentException("Lobby is empty");
-        
+
         var rnd = new Random();
         PlayerQueue = players.OrderBy(_ => rnd.Next()).ToList();
         CurrentPlayer = PlayerQueue[0];
@@ -60,9 +59,9 @@ public class State
                 _playersHexCount[prevHexValues.Owner!] -= 1;
                 _playersHexCount[move.owner] += 1;
             }
-            else if (string.IsNullOrEmpty(prevHexValues.Owner)) 
+            else if (string.IsNullOrEmpty(prevHexValues.Owner))
                 _playersHexCount[move.owner] += 1;
-            
+
             _field[(move.q, move.r, move.s)].UpdateHex(move.power, move.owner);
         }
     }
@@ -74,12 +73,12 @@ public class State
             if (_playersHexCount[player] < 1)
             {
                 PlayerQueue.Remove(player);
-                losePlayers.Add(player); 
+                losePlayers.Add(player);
             }
 
         return losePlayers;
     }
-    
+
     public string? CheckForWinner()
     {
         var activePlayers = PlayerQueue
@@ -93,4 +92,22 @@ public class State
         _field.Values
             .Select(cell => cell.ToTuple())
             .ToArray();
+
+    public void RemovePlayer(string nickname)
+    {
+        if (nickname == CurrentPlayer)
+            PassTheMove();
+
+        _playersHexCount.TryRemove(nickname, out _);
+        RemovePlayerFromField(nickname);
+
+        PlayerQueue.Remove(nickname);
+    }
+
+    private void RemovePlayerFromField(string nickname)
+    {
+        foreach (var (coord, cell) in _field)
+            if (cell.Owner == nickname)
+                cell.UpdateHex(cell.Power, null);
+    }
 }

@@ -14,8 +14,16 @@ public class LeaveCommand : ICommand
     {
         if (!lobby.TryRemovePlayer(nickname))
             return;
-        
-        await manager.BroadcastAsync(lobbyCode, new { type = "PlayerLeft", nickname });
+
+        lobby.Situation.RemovePlayer(nickname);
+
+        dynamic message;
+        if (lobby.IsGameStarted)
+            message = new { type = "PlayerLeft", nickname, nextPlayer = lobby.Situation.CurrentPlayer };
+        else
+            message = new { type = "PlayerLeft", nickname };
+
+        await manager.BroadcastAsync(lobbyCode, message);
         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by server", CancellationToken.None);
     }
 }
