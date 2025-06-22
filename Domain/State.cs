@@ -9,22 +9,33 @@ public class State
     public List<string> PlayerQueue { get; private set; }
     private readonly ConcurrentDictionary<(int q, int r, int s), HexCell> _field = new();
     private readonly ConcurrentDictionary<string, int> _playersHexCount = new();
+    private readonly List<(int q, int r, int s)> _playerPositions = new();
 
-    public State((int q, int r, int s, int power, string owner, bool size)[] field)
+    public State((int q, int r, int s, int power, int owner, bool size)[] field)
     {
         foreach (var hex in field)
-            _field[(hex.q, hex.r, hex.s)] = new HexCell(hex.q, hex.r, hex.s, hex.power, hex.owner, hex.size);
+        {
+            if (hex.owner != -1)
+                _playerPositions.Add((hex.q, hex.r, hex.s));
+            _field[(hex.q, hex.r, hex.s)] = new HexCell(hex.q, hex.r, hex.s, hex.power, null, hex.size);
+        }
+            
     }
 
     public void StartGame(List<string> players)
     {
         if (players.Count < 1)
             throw new ArgumentException("Lobby is empty");
+        if (players.Count != _playerPositions.Count)
+            throw new InvalidOperationException("The count of players and started fields is not similar"); 
 
         var rnd = new Random();
         PlayerQueue = players.OrderBy(_ => rnd.Next()).ToList();
         CurrentPlayer = PlayerQueue[0];
         CurrentPhase = Phase.Attack;
+
+        foreach (var (hex, player) in _playerPositions.Zip(PlayerQueue, (h, p) => (h, p))) 
+            _field[(hex.q, hex.r, hex.s)].UpdateHex(player);
 
         foreach (var player in players)
             _playersHexCount[player] = 1;

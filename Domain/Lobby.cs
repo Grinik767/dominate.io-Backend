@@ -2,7 +2,7 @@
 
 namespace Domain;
 
-public class Lobby(int playersCount, (int q, int r, int s, int power, string owner, bool size)[] startField)
+public class Lobby(int playersCount, (int q, int r, int s, int power, int owner, bool size)[] startField)
 {
     public readonly State Situation = new(startField);
     private readonly ConcurrentDictionary<string, Player> _data = new();
