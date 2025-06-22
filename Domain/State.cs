@@ -9,14 +9,14 @@ public class State
     public List<string> PlayerQueue { get; private set; }
     private readonly ConcurrentDictionary<(int q, int r, int s), HexCell> _field = new();
     private readonly ConcurrentDictionary<string, int> _playersHexCount = new();
-    private readonly List<(int q, int r, int s)> _playerPositions = new();
+    private readonly ConcurrentDictionary<int, (int q, int r, int s)> _playerPositions = new();
 
     public State((int q, int r, int s, int power, int owner, bool size)[] field)
     {
         foreach (var hex in field)
         {
             if (hex.owner != -1)
-                _playerPositions.Add((hex.q, hex.r, hex.s));
+                _playerPositions[hex.owner] = (hex.q, hex.r, hex.s);
             _field[(hex.q, hex.r, hex.s)] = new HexCell(hex.q, hex.r, hex.s, hex.power, null, hex.size);
         }
             
@@ -34,8 +34,9 @@ public class State
         CurrentPlayer = PlayerQueue[0];
         CurrentPhase = Phase.Attack;
 
-        foreach (var (hex, player) in _playerPositions.Zip(PlayerQueue, (h, p) => (h, p))) 
-            _field[(hex.q, hex.r, hex.s)].UpdateHex(player);
+        for (var i = 0; i < PlayerQueue.Count; i++)
+            if (_playerPositions.TryGetValue(i, out var hex))
+                _field[(hex.q, hex.r, hex.s)].UpdateHex(PlayerQueue[i]);
 
         foreach (var player in players)
             _playersHexCount[player] = 1;
