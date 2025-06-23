@@ -35,8 +35,6 @@ public class GameController(Storage storage, ConnectionManager manager, CommandD
                 var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await dispatcher.GetCommand("Leave")!.ExecuteAsync(lobby, r.Code, r.Nickname, manager, socket,
-                        new JsonElement());
                     break;
                 }
 
