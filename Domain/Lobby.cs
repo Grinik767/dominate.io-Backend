@@ -36,6 +36,8 @@ public class Lobby(int playersCount, (int q, int r, int s, int power, int owner,
         Situation.StartGame(players);
         LastAccess = DateTime.Now;
     }
+    
+    public bool IsLobbyFull() => _data.Count == playersCount; 
 
     public bool IsContainsPlayer(string nickname) => _data.ContainsKey(nickname);
 

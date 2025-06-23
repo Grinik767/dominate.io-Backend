@@ -19,6 +19,26 @@ public class LobbyController(Storage storage, CodeGenerator codeGenerator) : Con
         return Ok(new { Code = code });
     }
 
-    [HttpGet("{code}")]
-    public IActionResult IsLobbyExist(string code) => Ok(new { IsExist = storage.IsLobbyExist(code) });
+    [HttpGet("{code}/{nickname}")]
+    public IActionResult IsLobbyExist(string code, string nickname)
+    {
+        var isExist = storage.IsLobbyExist(code);
+        if (!isExist)
+            return Ok(new
+            {
+                IsExist = isExist,
+                HasFreeSpace = false,
+                CanJoin = false
+            });
+
+        var lobby = storage.GetLobby(code);
+        var hasFreeSpace = !lobby.IsLobbyFull();
+
+        return Ok(new
+        {
+            IsExist = storage.IsLobbyExist(code),
+            HasFreeSpace = hasFreeSpace,
+            CanJoin = hasFreeSpace && !lobby.IsContainsPlayer(nickname)
+        });
+    }
 }
