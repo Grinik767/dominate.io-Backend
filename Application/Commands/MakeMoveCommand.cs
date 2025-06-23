@@ -47,6 +47,8 @@ public class MakeMoveCommand : ICommand
                 type = "MoveMade",
                 nickname,
                 moves = moveDtos,
+                playeerQueue = lobby.Situation.PlayerQueue,
+                playersHexes = lobby.Situation._playersHexCount,
                 message = "Correct move"
             });
     }

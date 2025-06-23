@@ -8,7 +8,7 @@ public class State
     public Phase CurrentPhase { get; private set; }
     public List<string> PlayerQueue { get; private set; }
     private readonly ConcurrentDictionary<(int q, int r, int s), HexCell> _field = new();
-    private readonly ConcurrentDictionary<string, int> _playersHexCount = new();
+    public readonly ConcurrentDictionary<string, int> _playersHexCount = new();
     private readonly ConcurrentDictionary<int, (int q, int r, int s)> _playerPositions = new();
 
     public State((int q, int r, int s, int power, int owner, bool size)[] field)
